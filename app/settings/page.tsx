@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import PushNotificationButton from "@/components/PushNotificationButton";
 
 function SettingsContent() {
   const router = useRouter();
@@ -99,11 +100,61 @@ function SettingsContent() {
       <div className="bg-white rounded-3xl p-5 shadow-[0_4px_32px_rgba(22,52,34,0.06)] space-y-4">
         <div>
           <h2 className="font-semibold text-forest mb-0.5">Akahu connection</h2>
-          <p className="text-xs text-gray-400">
-            Get your personal token from{" "}
-            <span className="text-clay underline">myakahu.nz</span> under Apps → budgetboi → Copy token
-          </p>
+          <p className="text-xs text-gray-400">Akahu is a free NZ open banking service that securely shares your transactions with budgetboi.</p>
         </div>
+
+        {/* Step-by-step guide — shown prominently during onboarding, collapsed otherwise */}
+        {isOnboarding ? (
+          <div className="space-y-2">
+            {[
+              {
+                n: 1,
+                title: "Create an Akahu account",
+                body: (
+                  <>Go to{" "}
+                    <a href="https://myakahu.nz" target="_blank" rel="noopener noreferrer" className="text-clay underline font-medium">myakahu.nz</a>
+                    {" "}and sign up for a free account.
+                  </>
+                ),
+              },
+              {
+                n: 2,
+                title: "Connect your bank",
+                body: "Inside Akahu, add your NZ bank account(s). You'll be redirected to your bank to approve the connection.",
+              },
+              {
+                n: 3,
+                title: "Authorise budgetboi",
+                body: (
+                  <>In Akahu go to <span className="font-medium text-forest">Apps</span> → find <span className="font-medium text-forest">budgetboi</span> → click <span className="font-medium text-forest">Connect</span>.</>
+                ),
+              },
+              {
+                n: 4,
+                title: "Copy your token",
+                body: (
+                  <>On the budgetboi app page click <span className="font-medium text-forest">Copy token</span>, then paste it in the field below.</>
+                ),
+              },
+            ].map((step) => (
+              <div key={step.n} className="flex gap-3 items-start px-3 py-3 bg-parchment rounded-2xl">
+                <span className="w-6 h-6 shrink-0 rounded-full bg-forest text-white text-xs font-bold flex items-center justify-center mt-0.5">
+                  {step.n}
+                </span>
+                <div>
+                  <p className="text-sm font-medium text-forest">{step.title}</p>
+                  <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{step.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-xs text-gray-400">
+            Get your token from{" "}
+            <a href="https://myakahu.nz" target="_blank" rel="noopener noreferrer" className="text-clay underline">myakahu.nz</a>
+            {" "}under Apps → budgetboi → Copy token
+          </p>
+        )}
 
         {hasToken && !tokenSaved && (
           <div className="flex items-center gap-2 py-2 px-3 bg-emerald-50 rounded-xl">
@@ -113,7 +164,7 @@ function SettingsContent() {
 
         {tokenSaved && (
           <div className="flex items-center gap-2 py-2 px-3 bg-emerald-50 rounded-xl">
-            <span className="text-emerald-600 text-sm">✓ Connected & synced!</span>
+            <span className="text-emerald-600 text-sm">✓ Connected & syncing your transactions…</span>
           </div>
         )}
 
@@ -187,9 +238,19 @@ function SettingsContent() {
       )}
 
       {!isOnboarding && (
+        <div className="bg-white rounded-3xl p-5 shadow-[0_4px_32px_rgba(22,52,34,0.06)] space-y-3">
+          <div>
+            <h2 className="font-semibold text-forest mb-0.5">Notifications</h2>
+            <p className="text-xs text-gray-400">Get alerts for big spends, upcoming bills, and budget limits</p>
+          </div>
+          <PushNotificationButton />
+        </div>
+      )}
+
+      {!isOnboarding && (
         <button
           onClick={signOut}
-          className="w-full h-12 rounded-xl border border-red-200 text-red-500 text-sm font-medium"
+          className="w-full h-12 rounded-xl border border-red-200 text-red-500 text-sm font-medium active:scale-95 transition-transform"
         >
           Sign out
         </button>

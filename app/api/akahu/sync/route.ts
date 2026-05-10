@@ -9,17 +9,10 @@ export async function POST(req: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { data: settings } = await supabase
-    .from("user_settings")
-    .select("akahu_user_token")
-    .eq("user_id", user.id)
-    .single();
-
-  if (!settings?.akahu_user_token) {
+  const { data: token, error: tokenErr } = await supabase.rpc("get_akahu_token");
+  if (tokenErr || !token) {
     return NextResponse.json({ error: "No Akahu token" }, { status: 400 });
   }
-
-  const token = settings.akahu_user_token;
 
   await refreshAccounts(token);
 

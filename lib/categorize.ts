@@ -158,6 +158,17 @@ const RULES: RuleDef[] = [
       /\b(glengarry|vino fino|liquor king|mount liquor)\b/,
       /\bfirst choice liquor\b/,
       /\b(countdown|pak.?n.?save|new world)\s+liquor\b/,
+      // Generic bar/pub/tavern/winery patterns
+      /\b(pub|tavern|saloon|taphouse|tap house)\b/,
+      /\bwine (bar|cellar|room|shop)\b/,
+      /\b(winery|vineyard|cellar door)\b/,
+      /\bbrewery\b/,
+      /\btaproom\b/,
+      /\b(sports bar|cocktail bar|rooftop bar)\b/,
+      // Ends with "bar" or "pub" — "The Shoreline Bar", "First Mates Bar"
+      /\bbar$/, /\bpub$/,
+      // Common NZ bar name patterns
+      /\b(first mates|last laugh|ale house|alehouse)\b/,
     ],
     category: "Alcohol",
   },
@@ -243,6 +254,7 @@ const RULES: RuleDef[] = [
       /\b(vending|vending direct)\b/,   // vending machine food/drink
       /\bbarista\b/,
       /\b(matakana|farmers market)\b/,  // artisan food producers
+      /\b(fork.{0,5}tap|brew.{0,5}tap|tap room|taproom)\b/,  // Fork & Tap, Brew & Tap etc.
     ],
     websitePatterns: [/ubereats\.com/, /doordash\.com/, /menulog\.co\.nz/],
     category: "Dining & takeaway",
@@ -379,6 +391,7 @@ const RULES: RuleDef[] = [
       /\bamazon\b/,
       /\bali ?express\b/,
       /\btrade ?me\b/,
+      /\bugg\b/,   // UGG boots / clothing
     ],
     websitePatterns: [/amazon\.com/, /aliexpress\.com/, /trademe\.co\.nz/, /mightyape\.co\.nz/],
     category: "Shopping",
@@ -482,6 +495,18 @@ const RULES: RuleDef[] = [
   },
 ];
 
+// Detects "Firstname Lastname" merchant names (e.g. "Porter James", "Freida Margolis")
+// that indicate a market stall / small vendor rather than a company.
+// Two capitalised words, no digits, not a known non-person phrase.
+const PERSON_NAME_RE = /^[A-Z][a-z]{1,14} [A-Z][a-z]{1,14}$/;
+const NOT_A_PERSON = /\b(holdings|limited|ltd|cafe|bar|kitchen|shop|store|salon|studio|clinic|group|services|solutions|trust|church|school|college|university|centre|center|market|farms?)\b/i;
+
+function looksLikePersonName(name: string | null | undefined): boolean {
+  if (!name) return false;
+  const trimmed = name.trim();
+  return PERSON_NAME_RE.test(trimmed) && !NOT_A_PERSON.test(trimmed);
+}
+
 export function applyRules(signals: TxnSignals): Category | null {
   const merchantNorm = signals.merchantName
     ? normalizeKey(signals.merchantName)
@@ -503,6 +528,12 @@ export function applyRules(signals: TxnSignals): Category | null {
       rule.patterns.some((p) => p.test(combined) || p.test(rawCombined)) ||
       (rule.websitePatterns?.some((p) => p.test(website)) ?? false);
     if (hit) return rule.category;
+  }
+
+  // Person-name heuristic: "Firstname Lastname" merchants are almost always
+  // market stalls or small cafés (small amounts) or peer transfers (large amounts)
+  if (looksLikePersonName(signals.merchantName)) {
+    return Math.abs(signals.amount) < 100 ? "Dining & takeaway" : "Transfers to others";
   }
 
   return null;

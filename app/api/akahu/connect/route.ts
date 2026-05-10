@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-// Saves a personal Akahu user token for the authenticated user
 export async function POST(req: NextRequest) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -15,14 +14,17 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Ensure the user_settings row exists first, then store the token in vault
   await supabase.from("user_settings").upsert(
-    {
-      user_id: user.id,
-      akahu_user_token: token.trim(),
-      updated_at: new Date().toISOString(),
-    },
+    { user_id: user.id, updated_at: new Date().toISOString() },
     { onConflict: "user_id" }
   );
+
+  const { error } = await supabase.rpc("save_akahu_token", { p_token: token.trim() });
+  if (error) {
+    console.error("vault save error:", error);
+    return NextResponse.json({ error: "Failed to save token" }, { status: 500 });
+  }
 
   return NextResponse.json({ ok: true });
 }

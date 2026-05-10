@@ -29,12 +29,11 @@ export default function ChatDrawer() {
 
   return (
     <>
-      {/* FAB */}
+      {/* FAB — hidden on desktop (chat accessible from sidebar link) */}
       <button
         onClick={() => setOpen(true)}
         aria-label="Ask AI"
-        className="fixed bottom-[72px] right-4 z-40 w-14 h-14 rounded-full bg-forest text-white shadow-[0_4px_20px_rgba(22,52,34,0.35)] flex items-center justify-center hover:opacity-90 active:scale-95 transition-all"
-        style={{ maxWidth: "calc(50vw + 200px - 16px)" }}
+        className="fixed bottom-[72px] right-4 z-40 w-14 h-14 rounded-full bg-forest text-white shadow-[0_4px_20px_rgba(22,52,34,0.35)] flex items-center justify-center hover:opacity-90 active:scale-95 transition-all lg:hidden"
       >
         <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
           <path d="M11 2C6.03 2 2 5.8 2 10.5c0 2.1.8 4 2.1 5.5L3 20l4.3-1.4A9.3 9.3 0 0011 19c4.97 0 9-3.8 9-8.5S15.97 2 11 2z" fill="currentColor" opacity=".15"/>

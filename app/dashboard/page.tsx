@@ -33,7 +33,7 @@ export default async function DashboardPage({
     .eq("user_id", user.id)
     .single();
 
-  if (!settings?.akahu_user_token) {
+  if (!settings?.akahu_token_id && !settings?.akahu_user_token) {
     redirect("/settings?onboard=1");
   }
 
@@ -105,11 +105,11 @@ export default async function DashboardPage({
     .slice(0, 3);
 
   return (
-    <div className="px-4 pt-6 pb-4 space-y-4">
+    <div className="px-4 pt-6 pb-4 space-y-4 lg:px-6 lg:pt-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-forest">budgetboi</h1>
+          <h1 className="text-xl font-bold text-forest lg:text-2xl">budgetboi</h1>
           <p className="text-xs text-gray-400">
             {daysLeft} day{daysLeft !== 1 ? "s" : ""} until pay · {periodLabel}
           </p>
@@ -122,104 +122,113 @@ export default async function DashboardPage({
         <PeriodToggle current={period} />
       </Suspense>
 
-      {/* Safe to spend — AI-native hero card */}
+      {/* Safe to spend — AI-native hero card (full width) */}
       <SafeToSpend />
 
-      {/* Budget alerts */}
-      {budgetAlerts.length > 0 && (
-        <section>
-          <div className="flex items-center justify-between mb-3 px-1">
-            <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide">Budgets</h2>
-            <a href="/dashboard/budgets" className="text-xs text-clay">Manage</a>
-          </div>
-          <div className="bg-white rounded-3xl px-4 shadow-[0_4px_32px_rgba(22,52,34,0.06)]">
-            {budgetAlerts.map((b, i) => {
-              const pct = Math.min((b.actual / b.limit_amount) * 100, 100);
-              const over = b.actual > b.limit_amount;
-              return (
-                <div key={b.category} className={`py-3 ${i < budgetAlerts.length - 1 ? "border-b border-gray-50" : ""}`}>
-                  <div className="flex justify-between text-sm mb-1.5">
-                    <span className="font-medium text-forest">{b.category}</span>
-                    <span className={over ? "text-red-500 font-semibold" : "text-amber-600"}>
-                      ${Math.round(b.actual)} / ${Math.round(b.limit_amount)}
-                    </span>
-                  </div>
-                  <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden">
-                    <div
-                      className={`h-full rounded-full ${over ? "bg-red-400" : "bg-amber-400"}`}
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
+      {/* Desktop 2-column grid */}
+      <div className="lg:grid lg:grid-cols-2 lg:gap-4 lg:items-start space-y-4 lg:space-y-0">
+        {/* Left column */}
+        <div className="space-y-4">
+          {/* Spending breakdown */}
+          {categoryData.length > 0 && (
+            <SpendingBreakdown data={categoryData} totalSpend={totalSpend} periodLabel={periodLabel} />
+          )}
 
-      {/* Spending breakdown */}
-      {categoryData.length > 0 && (
-        <SpendingBreakdown data={categoryData} totalSpend={totalSpend} periodLabel={periodLabel} />
-      )}
+          {/* Spend trajectory */}
+          <SpendTrajectory />
 
-      {/* Spend trajectory */}
-      <SpendTrajectory />
+          {/* AI Chat shortcut */}
+          <a
+            href="/dashboard/chat"
+            className="flex items-center gap-3 bg-forest/5 border border-forest/10 rounded-2xl px-4 py-3 hover:bg-forest/10 active:scale-[0.98] transition-all"
+          >
+            <div className="w-9 h-9 rounded-xl bg-forest/10 flex items-center justify-center shrink-0">
+              <svg width="16" height="16" viewBox="0 0 22 22" fill="none">
+                <path d="M11 2C6.03 2 2 5.8 2 10.5c0 2.1.8 4 2.1 5.5L3 20l4.3-1.4A9.3 9.3 0 0011 19c4.97 0 9-3.8 9-8.5S15.97 2 11 2z" fill="#163422"/>
+              </svg>
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-forest">Ask AI anything</p>
+              <p className="text-xs text-gray-400">Chat about your spending, budgets, patterns</p>
+            </div>
+            <svg className="w-4 h-4 text-gray-300" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+            </svg>
+          </a>
 
-      {/* Upcoming bills */}
-      <BillCalendar />
-
-      {/* AI Chat shortcut */}
-      <a
-        href="/dashboard/chat"
-        className="flex items-center gap-3 bg-forest/5 border border-forest/10 rounded-2xl px-4 py-3 hover:bg-forest/10 transition-colors"
-      >
-        <span className="text-2xl">🤖</span>
-        <div className="flex-1">
-          <p className="text-sm font-medium text-forest">Ask AI anything</p>
-          <p className="text-xs text-gray-400">Chat about your spending, budgets, patterns</p>
-        </div>
-        <svg className="w-4 h-4 text-gray-300" viewBox="0 0 20 20" fill="currentColor">
-          <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-        </svg>
-      </a>
-
-      {/* Subscription audit */}
-      <SubscriptionAudit />
-
-      {/* AI Insights */}
-      <section>
-        <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3 px-1">
-          AI Insights
-        </h2>
-        <InsightCards />
-      </section>
-
-      {/* Accounts */}
-      {accounts && accounts.length > 0 && (
-        <section>
-          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3 px-1">
-            Accounts
-          </h2>
-          <AccountsList accounts={accounts} />
-        </section>
-      )}
-
-      {/* Recent transactions */}
-      {recentTxns && recentTxns.length > 0 && (
-        <section>
-          <div className="flex items-center justify-between mb-3 px-1">
-            <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide">
-              Recent
+          {/* AI Insights */}
+          <section>
+            <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3 px-1">
+              AI Insights
             </h2>
-            <a href="/dashboard/transactions" className="text-xs text-clay">
-              See all
-            </a>
-          </div>
-          <div className="bg-white rounded-3xl px-4 shadow-[0_4px_32px_rgba(22,52,34,0.06)]">
-            <TransactionList transactions={recentTxns} />
-          </div>
-        </section>
-      )}
+            <InsightCards />
+          </section>
+        </div>
+
+        {/* Right column */}
+        <div className="space-y-4">
+          {/* Budget alerts */}
+          {budgetAlerts.length > 0 && (
+            <section>
+              <div className="flex items-center justify-between mb-3 px-1">
+                <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide">Budgets</h2>
+                <a href="/dashboard/budgets" className="text-xs text-clay">Manage</a>
+              </div>
+              <div className="bg-white rounded-3xl px-4 shadow-[0_4px_32px_rgba(22,52,34,0.06)]">
+                {budgetAlerts.map((b, i) => {
+                  const pct = Math.min((b.actual / b.limit_amount) * 100, 100);
+                  const over = b.actual > b.limit_amount;
+                  return (
+                    <div key={b.category} className={`py-3 ${i < budgetAlerts.length - 1 ? "border-b border-gray-50" : ""}`}>
+                      <div className="flex justify-between text-sm mb-1.5">
+                        <span className="font-medium text-forest">{b.category}</span>
+                        <span className={over ? "text-red-500 font-semibold" : "text-amber-600"}>
+                          ${Math.round(b.actual)} / ${Math.round(b.limit_amount)}
+                        </span>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full ${over ? "bg-red-400" : "bg-amber-400"}`}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
+          {/* Upcoming bills */}
+          <BillCalendar />
+
+          {/* Subscription audit */}
+          <SubscriptionAudit />
+
+          {/* Accounts */}
+          {accounts && accounts.length > 0 && (
+            <section>
+              <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3 px-1">
+                Accounts
+              </h2>
+              <AccountsList accounts={accounts} />
+            </section>
+          )}
+
+          {/* Recent transactions */}
+          {recentTxns && recentTxns.length > 0 && (
+            <section>
+              <div className="flex items-center justify-between mb-3 px-1">
+                <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide">Recent</h2>
+                <a href="/dashboard/transactions" className="text-xs text-clay">See all</a>
+              </div>
+              <div className="bg-white rounded-3xl px-4 shadow-[0_4px_32px_rgba(22,52,34,0.06)]">
+                <TransactionList transactions={recentTxns} />
+              </div>
+            </section>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

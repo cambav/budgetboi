@@ -59,26 +59,29 @@ export default function TransactionList({ transactions, showCategory = true }: T
         const label = t.merchant_name ?? t.description;
 
         return (
-          <li key={t.id} className="flex items-center gap-3 py-3">
-            <div className="w-9 h-9 rounded-xl bg-parchment flex items-center justify-center text-sm shrink-0">
+          <li
+            key={t.id}
+            className="flex items-center gap-3 py-3 -mx-2 px-2 rounded-xl transition-colors active:bg-parchment"
+          >
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm shrink-0 ${isIncome ? "bg-emerald-50" : "bg-parchment"}`}>
               {icon}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-forest truncate">{label}</p>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-gray-400 flex items-center gap-1">
                 {format(new Date(t.date), "d MMM")}
                 {showCategory && t.category && (
-                  <span className="ml-1 text-gray-300">· {t.category}</span>
+                  <span className="text-gray-300">· {t.category}</span>
                 )}
                 {t.is_pending && (
-                  <span className="ml-1 px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 text-xs">
+                  <span className="px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 text-[10px] font-medium">
                     pending
                   </span>
                 )}
               </p>
             </div>
             <span
-              className={`text-sm font-semibold shrink-0 ${
+              className={`text-sm font-semibold shrink-0 tabular-nums ${
                 isIncome ? "text-emerald-600" : "text-forest"
               }`}
             >

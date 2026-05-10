@@ -8,11 +8,20 @@ export async function GET() {
 
   const { data } = await supabase
     .from("user_settings")
-    .select("*")
+    .select("pay_frequency, pay_day_of_week, pay_day_of_month, last_pay_date, setup_complete, onboarded, akahu_token_id, akahu_user_token")
     .eq("user_id", user.id)
     .single();
 
-  return NextResponse.json(data ?? {});
+  return NextResponse.json({
+    pay_frequency: data?.pay_frequency,
+    pay_day_of_week: data?.pay_day_of_week,
+    pay_day_of_month: data?.pay_day_of_month,
+    last_pay_date: data?.last_pay_date,
+    setup_complete: data?.setup_complete,
+    onboarded: data?.onboarded,
+    // Return boolean only — never send the raw token to the browser
+    akahu_user_token: !!(data?.akahu_token_id || data?.akahu_user_token),
+  });
 }
 
 export async function PATCH(req: NextRequest) {

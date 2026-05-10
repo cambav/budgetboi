@@ -12,6 +12,10 @@ const NAV = [
   { href: "/settings", label: "Settings", icon: SettingsIcon },
 ];
 
+const SIDEBAR_ONLY = [
+  { href: "/dashboard/chat", label: "Ask AI", icon: ChatIcon },
+];
+
 function isActive(href: string, pathname: string) {
   if (href === "/dashboard") return pathname === "/dashboard";
   return pathname.startsWith(href);
@@ -62,6 +66,25 @@ export function SidebarNav() {
             </Link>
           );
         })}
+        {/* Divider */}
+        <div className="my-2 border-t border-gray-100" />
+        {SIDEBAR_ONLY.map(({ href, label, icon: Icon }) => {
+          const active = isActive(href, pathname);
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                active
+                  ? "bg-forest text-white shadow-[0_2px_8px_rgba(22,52,34,0.25)]"
+                  : "text-gray-500 hover:text-forest hover:bg-parchment"
+              }`}
+            >
+              <Icon className="w-4 h-4 shrink-0" />
+              {label}
+            </Link>
+          );
+        })}
       </nav>
       <div className="px-3">
         <Link
@@ -80,6 +103,13 @@ export function SidebarNav() {
   );
 }
 
+function ChatIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 20 20" fill="currentColor">
+      <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" />
+    </svg>
+  );
+}
 function HomeIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 20 20" fill="currentColor">
